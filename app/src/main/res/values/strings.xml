@@ -32,4 +32,17 @@
 
     <string name="choose_a_letter">CHOOSE A LETTER</string>
 
+    <string-array name="wordList">
+        <item>ELEPHANT</item>
+        <item>CAR</item>
+        <item>BEAUTIFUL</item>
+        <item>QUICK</item>
+        <item>Zephyr</item>
+        <item>JUXTAPOSE</item>
+        <item>MYSTIC</item>
+        <item>GALAXY</item>
+        <item>VORTEX</item>
+        <item>PNEUMONIA</item>
+    </string-array>
+
 </resources>
