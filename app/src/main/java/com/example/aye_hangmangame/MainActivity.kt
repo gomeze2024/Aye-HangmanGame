@@ -47,6 +47,9 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "You Win", Toast.LENGTH_LONG).show()
             }
         }
+
+        //Assigns each letter button to the onClickListener with the variable name clickListener
+        letterButtons.forEach { id -> findViewById<Button>(id).setOnClickListener(clickListener) }
     }
     private fun checkLetterValidity(letter: String, chosenWord: String) {
         if (!(chosenWord.contains(letter))) {
