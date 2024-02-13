@@ -9,60 +9,136 @@ import androidx.core.content.ContextCompat
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
-    private var incorrectCounter = 0
-    private var correctCounter = 0
+    private var hintCounter : Int = 0
+    private var incorrectCounter : Int = 0
+    private lateinit var gameState: String
+    private lateinit var chosenWord : String
+    private lateinit var guessedLetters : ArrayList<Int>
+    private lateinit var wordArray : Array<String>
+
+    private lateinit var newButton: Button
+    private lateinit var hintButton: Button
+
+    private val letterButtons = arrayOf(R.id.a, R.id.b, R.id.c, R.id.d, R.id.e, R.id.f, R.id.g, 
+        R.id.h, R.id.i, R.id.j, R.id.k, R.id.l, R.id.m, R.id.n, R.id.o, R.id.p, R.id.q, R.id.r, 
+        R.id.s, R.id.t, R.id.u, R.id.v, R.id.w, R.id.x, R.id.y, R.id.z)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        correctCounter = 0
-        incorrectCounter = 0
-        //Gets list of possible hangman words from the strings.xml file
-        val wordArray = resources.getStringArray(R.array.wordList)
-        //Chooses one of the words at random, chosen word is the word to guess
-        val chosenWord = wordArray[Random.nextInt(wordArray.size)]
-        //Array of all 26 buttons for every letter
-        val letterButtons = arrayOf(R.id.a, R.id.b, R.id.c, R.id.d, R.id.e, R.id.f, R.id.g, R.id.h, R.id.i, R.id.j, R.id.k, R.id.l, R.id.m, R.id.n, R.id.o, R.id.p, R.id.q, R.id.r, R.id.s, R.id.t, R.id.u, R.id.v, R.id.w, R.id.x, R.id.y, R.id.z)
-        val hintButton = findViewById<Button>(R.id.hint)
-        val newGame = findViewById<Button>(R.id.newgame)
-        var hintPressedCounter = 0
 
-        //General onClickListener for the letters
+        if (savedInstanceState != null) {
+            hintCounter = savedInstanceState.getInt(HINT_COUNTER, 0)
+            incorrectCounter = savedInstanceState.getInt(INCORRECT_COUNTER, 0);
+            chosenWord = savedInstanceState.getString(CHOSEN_WORD,"")
+            gameState = savedInstanceState.getString(GAME_STATE, "")
+            guessedLetters = savedInstanceState.getIntegerArrayList(GUESSED_LETTERS) ?: ArrayList()
+        } else {
+            wordArray = resources.getStringArray(R.array.wordList)
+            chosenWord = wordArray[Random.nextInt(wordArray.size)]
+            gameState = "_".repeat(chosenWord.length)
+            guessedLetters = ArrayList()
+        }
+
+        val hintButton = findViewById<Button>(R.id.hint)
+        val newGameButton = findViewById<Button>(R.id.newGame)
+
+        for (buttonId in guessedLetters) {
+            val button = findViewById<Button>(buttonId)
+            button.visibility = View.INVISIBLE
+        }
+
+        //General onClickListener for the letters.
         val clickListener = View.OnClickListener{ view ->
-            //Casts the view as a button
-            val button = view as Button
-            //Get the letter that the button is associated with
-            val letter = button.text.toString()
-            //Check if letter is in the word
-            checkLetterValidity(letter, chosenWord)
-            //Changes the color of the button to show it's been pressed
-            button.setBackgroundColor(ContextCompat.getColor(applicationContext, R.color.black))
-            //Makes the button un-clickable
-            button.isEnabled = false
-            //If all body parts shown, game over
-            if (incorrectCounter == 6) {
-                Toast.makeText(this, "Game Over!", Toast.LENGTH_LONG).show()
-            }
-            //If all letters have been guessed, player wins
-            else if (correctCounter == chosenWord.length) {
-                Toast.makeText(this, "You Win", Toast.LENGTH_LONG).show()
+            when (view.id) {
+                R.id.newGame -> {
+                    //start a new game
+                }
+                R.id.hint -> {
+                    //give a hint
+                }
+                //Button pressed was a letter
+                else -> {
+                    val button : Button = view as Button
+                    val letter : String = button.text.toString()
+
+                    button.isEnabled = false
+                    button.visibility = View.INVISIBLE
+                    guessedLetters.add(view.id)
+
+                    checkLetterValidity(letter)
+                }
             }
         }
 
-        //Assigns each letter button to the onClickListener with the variable name clickListener
-        letterButtons.forEach { id -> findViewById<Button>(id).setOnClickListener(clickListener) }
+        //Assigns each button to the onClickListener above
+        hintButton.setOnClickListener(clickListener)
+        newGameButton.setOnClickListener(clickListener)
+        letterButtons.forEach { viewId: Int-> findViewById<Button>(viewId).setOnClickListener(clickListener)}
     }
-    private fun checkLetterValidity(letter: String, chosenWord: String) {
-        if (!(chosenWord.contains(letter))) {
-            //Code for making image of next body part appear
 
+    private fun checkLetterValidity(letter: String) {
+        if (chosenWord.contains(letter)) {
+            Toast.makeText(this, "On the board!", Toast.LENGTH_SHORT).show()
+            updateSecretWord(letter)
+            checkIfWon()
+
+        } else {
             Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show()
             incorrectCounter++
-        } else {
-            //Code for making the letter appear on the EditText to show it's a correct guess
-
-            //Count how many instances of the letter is in the word
-            val instanceCount = chosenWord.count { it == letter[0] }
-            correctCounter += instanceCount
+            checkIfLost()
         }
+    }
+
+    private fun updateSecretWord(guessedLetter : String) {
+        var secretWord : String = ""
+        gameState.forEach { c -> secretWord +=
+            if (c.toString() == guessedLetter) {
+                    secretWord += c
+             } else {
+                 secretWord += "_"
+             }
+        }
+        gameState = secretWord
+    }
+
+    private fun checkIfWon() : Boolean{
+        return gameState == chosenWord
+    }
+
+    private fun checkIfLost() {
+        when (incorrectCounter) {
+            1 -> hangmanDrawing.setImageResource()
+            2 -> hangmanDrawing.setImageResource()
+            3 -> hangmanDrawing.setImageResource()
+            4 -> hangmanDrawing.setImageResource()
+            5 -> hangmanDrawing.setImageResource()
+            6 -> hangmanDrawing.setImageResource()
+            7 -> hangmanDrawing.setImageResource()
+            8 -> hangmanDrawing.setImageResource()
+            9 -> hangmanDrawing.setImageResource()
+            10 -> hangmanDrawing.setImageResource()
+            11 -> {
+                hhangmanDrawing.setImageResource()
+                //You lost
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(GAME_STATE, gameState)
+        outState.putString(CHOSEN_WORD, chosenWord)
+        outState.putInt(HINT_COUNTER, hintCounter)
+        outState.putInt(INCORRECT_COUNTER, incorrectCounter)
+        outState.putIntegerArrayList(GUESSED_LETTERS, ArrayList(guessedLetters))
+    }
+
+    companion object {
+        private const val GAME_STATE = "game_state"
+        private const val CHOSEN_WORD = "chosen_word"
+        private const val HINT_COUNTER = "hint_counter"
+        private const val INCORRECT_COUNTER = "incorrect_counter"
+        private const val GUESSED_LETTERS = "remaining_letters"
     }
 }
