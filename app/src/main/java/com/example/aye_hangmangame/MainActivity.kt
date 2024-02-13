@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import kotlin.random.Random
@@ -16,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var guessedLetters : ArrayList<Int>
     private lateinit var wordArray : Array<String>
 
-    private lateinit var newButton: Button
+    private lateinit var newGameButton: Button
     private lateinit var hintButton: Button
 
     private val letterButtons = arrayOf(R.id.a, R.id.b, R.id.c, R.id.d, R.id.e, R.id.f, R.id.g, 
@@ -40,13 +41,17 @@ class MainActivity : AppCompatActivity() {
             guessedLetters = ArrayList()
         }
 
-        val hintButton = findViewById<Button>(R.id.hint)
-        val newGameButton = findViewById<Button>(R.id.newGame)
+        hintButton = findViewById<Button>(R.id.hint)
+        newGameButton = findViewById<Button>(R.id.newGame)
+        findViewById<TextView>(R.id.gameTextView).text = gameState
 
+        var guessedText = ""
         for (buttonId in guessedLetters) {
             val button = findViewById<Button>(buttonId)
             button.visibility = View.INVISIBLE
+            guessedText += button.text
         }
+        findViewById<TextView>(R.id.guessedTextView).text = guessedText
 
         //General onClickListener for the letters.
         val clickListener = View.OnClickListener{ view ->
