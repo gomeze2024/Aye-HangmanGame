@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity() {
             gameState = "_".repeat(chosenWord.length)
             guessedLetters = ArrayList()
         }
-
         initLetterButtons()
         hintUpdate()
         lettersAdapter.setDisableFalse()
@@ -83,15 +82,7 @@ class MainActivity : AppCompatActivity() {
         checkIfWon()
         checkIfLost()
 
-        //General onClickListener for the letters.
-        val clickListener = View.OnClickListener { view ->
-            when (view.id) {
-                R.id.newGame -> startNewGame()
-                R.id.hint -> showHint()
-            }
-        }
-
-        newGameButton.setOnClickListener(clickListener)
+        newGameButton.setOnClickListener { view -> startNewGame() }
     }
 
     private fun setHangManInvisible () {
@@ -123,6 +114,7 @@ class MainActivity : AppCompatActivity() {
             letterButtons.layoutManager = GridLayoutManager(this, 5, RecyclerView.VERTICAL, false)
             hintButton = findViewById(R.id.hint)
             hintView = findViewById(R.id.hintView)
+            hintButton.setOnClickListener { view -> showHint() }
         } else {
             letterButtons.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
         }
@@ -209,17 +201,18 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Hint not available.", Toast.LENGTH_SHORT).show()
         } else {
             //give a hint
-            hintUpdate()
             hintCounter++
             incorrectCounter++
+            hintUpdate()
         }
     }
 
     private fun hintUpdate() {
         when (hintCounter) {
-            0 -> {hintView.text = wordHint}
-            1 -> {disableHalfLetters()}
-            2 -> {showVowels()}
+            0 -> {}
+            1 -> {hintView.text = wordHint}
+            2 -> {disableHalfLetters()}
+            3 -> {showVowels()}
             //Shows all vowels
         }
     }
@@ -236,6 +229,7 @@ class MainActivity : AppCompatActivity() {
             val randomIndex = Random.nextInt(allIncorrectIndices.size)
             guessedLetters.add(randomIndex)
         }
+
         lettersAdapter.setGuessedLetters(guessedLetters)
         initLetterButtons()
     }
