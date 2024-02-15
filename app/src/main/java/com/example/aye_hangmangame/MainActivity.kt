@@ -6,7 +6,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
@@ -20,9 +21,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var newGameButton: Button
     private lateinit var hintButton: Button
 
-    private val letterButtons = arrayOf(R.id.a, R.id.b, R.id.c, R.id.d, R.id.e, R.id.f, R.id.g, 
-        R.id.h, R.id.i, R.id.j, R.id.k, R.id.l, R.id.m, R.id.n, R.id.o, R.id.p, R.id.q, R.id.r, 
-        R.id.s, R.id.t, R.id.u, R.id.v, R.id.w, R.id.x, R.id.y, R.id.z)
+    private lateinit var letterButtons : RecyclerView
+    private lateinit var letterList : ArrayList<Letter>
+    private lateinit var lettersAdapter : LetterAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
             chosenWord = savedInstanceState.getString(CHOSEN_WORD,"")
             gameState = savedInstanceState.getString(GAME_STATE, "")
             guessedLetters = savedInstanceState.getIntegerArrayList(GUESSED_LETTERS) ?: ArrayList()
+            lettersAdapter.setGuessedLetters(guessedLetters)
         } else {
             wordArray = resources.getStringArray(R.array.wordList)
             chosenWord = wordArray[Random.nextInt(wordArray.size)]
@@ -41,45 +43,28 @@ class MainActivity : AppCompatActivity() {
             guessedLetters = ArrayList()
         }
 
-        hintButton = findViewById<Button>(R.id.hint)
+        initLetterButtons()
+
+        //hintButton = findViewById<Button>(R.id.hint)
         newGameButton = findViewById<Button>(R.id.newGame)
         findViewById<TextView>(R.id.gameTextView).text = gameState
 
-        var guessedText = ""
-        for (buttonId in guessedLetters) {
-            val button = findViewById<Button>(buttonId)
-            button.visibility = View.INVISIBLE
-            guessedText += button.text
-        }
-        findViewById<TextView>(R.id.guessedTextView).text = guessedText
-
         //General onClickListener for the letters.
-        val clickListener = View.OnClickListener{ view ->
+        val clickListener = View.OnClickListener { view ->
             when (view.id) {
                 R.id.newGame -> {
                     //start a new game
                 }
-                R.id.hint -> {
-                    //give a hint
-                }
-                //Button pressed was a letter
+
                 else -> {
-                    val button : Button = view as Button
-                    val letter : String = button.text.toString()
-
-                    button.isEnabled = false
-                    button.visibility = View.INVISIBLE
-                    guessedLetters.add(view.id)
-
-                    checkLetterValidity(letter)
                 }
             }
         }
 
         //Assigns each button to the onClickListener above
-        hintButton.setOnClickListener(clickListener)
+        //hintButton.setOnClickListener(clickListener)
         newGameButton.setOnClickListener(clickListener)
-        letterButtons.forEach { viewId: Int-> findViewById<Button>(viewId).setOnClickListener(clickListener)}
+        //letterButtons.forEach { viewId: Int-> findViewById<Button>(viewId).setOnClickListener(clickListener)}
     }
 
     private fun checkLetterValidity(letter: String) {
@@ -95,16 +80,66 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateSecretWord(guessedLetter : String) {
-        var secretWord : String = ""
-        gameState.forEach { c -> secretWord +=
-            if (c.toString() == guessedLetter) {
-                    secretWord += c
-             } else {
-                 secretWord += "_"
-             }
+    private fun initLetterButtons(){
+        letterButtons = findViewById(R.id.recyclerView)
+        letterButtons.setHasFixedSize(true)
+        letterButtons.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+
+        letterList = ArrayList()
+        addLettersToList()
+
+        lettersAdapter = LetterAdapter(letterList)
+        letterButtons.adapter = lettersAdapter
+
+        lettersAdapter.onLetterClick = {
+            val letterIndex : Int = letterList.indexOf(it)
+
+            if (letterIndex != 1) {
+                guessedLetters.add(letterIndex)
+            }
+
+            checkLetterValidity(it.letterName)
         }
-        gameState = secretWord
+    }
+
+    private fun addLettersToList() {
+        letterList.add(Letter(getString(R.string.a)))
+        letterList.add(Letter(getString(R.string.b)))
+        letterList.add(Letter(getString(R.string.c)))
+        letterList.add(Letter(getString(R.string.d)))
+        letterList.add(Letter(getString(R.string.e)))
+        letterList.add(Letter(getString(R.string.f)))
+        letterList.add(Letter(getString(R.string.g)))
+        letterList.add(Letter(getString(R.string.h)))
+        letterList.add(Letter(getString(R.string.i)))
+        letterList.add(Letter(getString(R.string.j)))
+        letterList.add(Letter(getString(R.string.k)))
+        letterList.add(Letter(getString(R.string.l)))
+        letterList.add(Letter(getString(R.string.m)))
+        letterList.add(Letter(getString(R.string.n)))
+        letterList.add(Letter(getString(R.string.o)))
+        letterList.add(Letter(getString(R.string.p)))
+        letterList.add(Letter(getString(R.string.q)))
+        letterList.add(Letter(getString(R.string.r)))
+        letterList.add(Letter(getString(R.string.s)))
+        letterList.add(Letter(getString(R.string.t)))
+        letterList.add(Letter(getString(R.string.u)))
+        letterList.add(Letter(getString(R.string.v)))
+        letterList.add(Letter(getString(R.string.w)))
+        letterList.add(Letter(getString(R.string.x)))
+        letterList.add(Letter(getString(R.string.y)))
+        letterList.add(Letter(getString(R.string.z)))
+    }
+    private fun updateSecretWord(guessedLetter: String) {
+        gameState = chosenWord.mapIndexed { index, char ->
+            when {
+                char.toString() == guessedLetter -> char
+                gameState[index] != '_' -> gameState[index]
+                else -> "_"
+            }
+        }.joinToString("")
+
+        findViewById<TextView>(R.id.gameTextView).text = gameState
     }
 
     private fun checkIfWon() : Boolean{
@@ -113,7 +148,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkIfLost() {
         when (incorrectCounter) {
-            1 -> hangmanDrawing.setImageResource()
+            /**1 -> hangmanDrawing.setImageResource()
             2 -> hangmanDrawing.setImageResource()
             3 -> hangmanDrawing.setImageResource()
             4 -> hangmanDrawing.setImageResource()
@@ -126,7 +161,7 @@ class MainActivity : AppCompatActivity() {
             11 -> {
                 hhangmanDrawing.setImageResource()
                 //You lost
-            }
+            }**/
         }
     }
 
