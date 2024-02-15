@@ -1,12 +1,14 @@
 package com.example.aye_hangmangame
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.random.Random
@@ -41,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initLetterButtons()
 
         if (savedInstanceState != null) {
             hintCounter = savedInstanceState.getInt(HINT_COUNTER, 0)
@@ -85,9 +88,9 @@ class MainActivity : AppCompatActivity() {
                     //start a new game
                     startNewGame()
                 }
-                R.id.hint -> {
-                    showHint()
-                }
+                //R.id.hint -> {
+                   // showHint()
+                //}
                 //Button pressed was a letter
                 else -> {
                 }
@@ -122,7 +125,13 @@ class MainActivity : AppCompatActivity() {
     private fun initLetterButtons() {
         letterButtons = findViewById(R.id.recyclerView)
         letterButtons.setHasFixedSize(true)
-        letterButtons.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+
+        val orientation = resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            letterButtons.layoutManager = GridLayoutManager(this, 5, RecyclerView.VERTICAL, false)
+        } else {
+            letterButtons.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+        }
 
         letterList = ArrayList()
         addLettersToList()
@@ -200,7 +209,6 @@ class MainActivity : AppCompatActivity() {
         rightArm.visibility = View.INVISIBLE
         leftLeg.visibility = View.INVISIBLE
         rightLeg.visibility = View.INVISIBLE
-        //hangmanDrawing.setImageResource(0)
     }
 
     private fun showHint(){
@@ -212,13 +220,13 @@ class MainActivity : AppCompatActivity() {
             //give a hint
             when (hintCounter) {
                 0 -> {
-                    hintView.text = wordHint
+                    //hintView.text = wordHint
                     hintCounter++
                 }
                 1 -> {disableHalfLetters()}
                 2 -> {
                     //Shows all vowels
-                    showVowels()
+                    //showVowels()
                     //Uses a turn
                     incorrectCounter++
                 }
@@ -247,6 +255,7 @@ class MainActivity : AppCompatActivity() {
             allIncorrectIndices.removeAt(randomIndex)
         }
     }
+    /**
 
     private fun showVowels() {
         val vowels = listOf('A','E','I','O','U')
@@ -293,6 +302,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    **/
 
     private fun updateSecretWord(guessedLetter: String) {
         gameState = chosenWord.mapIndexed { index, char ->

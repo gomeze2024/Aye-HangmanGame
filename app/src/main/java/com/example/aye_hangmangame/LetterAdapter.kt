@@ -1,5 +1,6 @@
 package com.example.aye_hangmangame
 
+import android.content.res.Configuration
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
