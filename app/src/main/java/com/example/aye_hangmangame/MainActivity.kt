@@ -81,10 +81,17 @@ class MainActivity : AppCompatActivity() {
                                 //Disables half remaining letters
                                     //calc num of remaining letters
                                 val numLettersRemaining = lettersNotGuessedYet / 2
-                                for (i in 0..< numLettersRemaining) {
-                                    //choose a random un-guessed letter to go invisible
-
-                                }
+                                //Gets indices of unguessed letters
+                                val allUnguessedIndices = letterList.indices.filter { it !in guessedLetters }
+                                //Gets indices of all incorrect letters
+                                val allIncorrectIndices = allUnguessedIndices.filter { letterList[it].letterName.toCharArray()[0] !in chosenWord}.toMutableList()
+                                    for (i in 1..numLettersRemaining) {
+                                        val randomIndex = Random.nextInt(allIncorrectIndices.size)
+                                        val button: Button = letterButtons.layoutManager?.findViewByPosition(allIncorrectIndices[randomIndex]) as Button
+                                        button.isEnabled = false
+                                        button.visibility = View.INVISIBLE
+                                        allIncorrectIndices.removeAt(randomIndex)
+                                    }
                                 //Uses a turn
                                 incorrectCounter++
                                 hintCounter++
