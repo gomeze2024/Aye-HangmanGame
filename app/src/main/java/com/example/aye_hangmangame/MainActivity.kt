@@ -326,11 +326,34 @@ class MainActivity : AppCompatActivity() {
     private fun checkIfLost() {
         when (incorrectCounter) {
             1 -> head.visibility = View.VISIBLE
-            2 -> body.visibility = View.VISIBLE
-            3 -> leftArm.visibility = View.VISIBLE
-            4 -> rightArm.visibility = View.VISIBLE
-            5 -> leftLeg.visibility = View.VISIBLE
+            2 -> {
+                head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+            }
+            3 -> {
+                head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+            }
+            4 -> {
+                head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+                rightArm.visibility = View.VISIBLE
+            }
+            5 -> {
+                head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+                rightArm.visibility = View.VISIBLE
+                leftLeg.visibility = View.VISIBLE
+            }
             6 -> {
+                head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+                rightArm.visibility = View.VISIBLE
+                leftLeg.visibility = View.VISIBLE
                 rightLeg.visibility = View.VISIBLE
                 disableLetterButtons()
                 Toast.makeText(this, "You Lost? Up for a New Game?", Toast.LENGTH_SHORT).show()
