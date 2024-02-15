@@ -46,12 +46,14 @@ class MainActivity : AppCompatActivity() {
 
         wordArray = resources.getStringArray(R.array.wordList)
         hintArray = resources.getStringArray(R.array.hintList)
+        hintView = findViewById(R.id.hintView)
 
         if (savedInstanceState != null) {
             hintCounter = savedInstanceState.getInt(HINT_COUNTER, 0)
             incorrectCounter = savedInstanceState.getInt(INCORRECT_COUNTER, 0)
             chosenIndex = savedInstanceState.getInt(CHOSEN_INDEX,0)
             chosenWord = wordArray[chosenIndex]
+            wordHint = hintArray[chosenIndex]
             gameState = savedInstanceState.getString(GAME_STATE, "")
             guessedLetters = savedInstanceState.getIntegerArrayList(GUESSED_LETTERS) ?: ArrayList()
             lettersAdapter.setGuessedLetters(guessedLetters)
@@ -207,15 +209,15 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Hint not available.", Toast.LENGTH_SHORT).show()
         } else {
             //give a hint
+            hintUpdate()
             hintCounter++
             incorrectCounter++
-            hintUpdate()
         }
     }
 
     private fun hintUpdate() {
         when (hintCounter) {
-            0 -> {}
+            0 -> {hintView.text = wordHint}
             1 -> {disableHalfLetters()}
             2 -> {showVowels()}
             //Shows all vowels
