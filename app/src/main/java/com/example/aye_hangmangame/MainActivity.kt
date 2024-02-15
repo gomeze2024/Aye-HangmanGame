@@ -13,10 +13,15 @@ import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
     private var hintCounter : Int = 0
     private var incorrectCounter : Int = 0
+    private var randomNumber : Int = 0
+    private var lettersNotGuessedYet : Int = 26
     private lateinit var gameState: String
     private lateinit var chosenWord : String
+    private lateinit var wordHint : String
+    private lateinit var hintView : TextView
     private lateinit var guessedLetters : ArrayList<Int>
     private lateinit var wordArray : Array<String>
+    private lateinit var hintArray : Array<String>
 
     private lateinit var newGameButton: Button
     private lateinit var hintButton: Button
@@ -38,7 +43,10 @@ class MainActivity : AppCompatActivity() {
             lettersAdapter.setGuessedLetters(guessedLetters)
         } else {
             wordArray = resources.getStringArray(R.array.wordList)
-            chosenWord = wordArray[Random.nextInt(wordArray.size)]
+            hintArray = resources.getStringArray(R.array.hintList)
+            randomNumber = Random.nextInt(wordArray.size)
+            chosenWord = wordArray[randomNumber]
+            wordHint = hintArray[randomNumber]
             gameState = "_".repeat(chosenWord.length)
             guessedLetters = ArrayList()
         }
@@ -46,6 +54,8 @@ class MainActivity : AppCompatActivity() {
         initLetterButtons()
 
         //hintButton = findViewById<Button>(R.id.hint)
+        hintButton = findViewById<Button>(R.id.hint)
+        hintView = findViewById<TextView>(R.id.hintWord)
         newGameButton = findViewById<Button>(R.id.newGame)
         findViewById<TextView>(R.id.gameTextView).text = gameState
 
@@ -54,17 +64,52 @@ class MainActivity : AppCompatActivity() {
             when (view.id) {
                 R.id.newGame -> {
                     //start a new game
+                    startNewGame()
                 }
+                R.id.hint -> {
+                    if (incorrectCounter == 11) {
+                        //If clicking would cause user to lose
+                        Toast.makeText(this, "Hint not available.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        //give a hint
+                        when (hintCounter) {
+                            0 -> {
+                                hintView.text = wordHint
+                                hintCounter++
+                            }
+                            1 -> {
+                                //Disables half remaining letters
+                                    //calc num of remaining letters
+                                val numLettersRemaining = lettersNotGuessedYet / 2
+                                for (i in 0..< numLettersRemaining) {
+                                    //choose a random un-guessed letter to go invisible
 
+                                }
+                                //Uses a turn
+                                incorrectCounter++
+                                hintCounter++
+                            }
+                            2 -> {
+                                //Shows all vowels
+                                showVowels()
+                                //Uses a turn
+                                incorrectCounter++
+                                hintCounter++
+                            }
+                            else -> {
+                                //No more hints to give
+                                Toast.makeText(this, "No more hints!", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+                //Button pressed was a letter
                 else -> {
                 }
             }
         }
 
-        //Assigns each button to the onClickListener above
-        //hintButton.setOnClickListener(clickListener)
         newGameButton.setOnClickListener(clickListener)
-        //letterButtons.forEach { viewId: Int-> findViewById<Button>(viewId).setOnClickListener(clickListener)}
     }
 
     private fun checkLetterValidity(letter: String) {
@@ -80,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun initLetterButtons(){
+    private fun initLetterButtons() {
         letterButtons = findViewById(R.id.recyclerView)
         letterButtons.setHasFixedSize(true)
         letterButtons.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
@@ -92,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         letterButtons.adapter = lettersAdapter
 
         lettersAdapter.onLetterClick = {
-            val letterIndex : Int = letterList.indexOf(it)
+            val letterIndex: Int = letterList.indexOf(it)
 
             if (letterIndex != 1) {
                 guessedLetters.add(letterIndex)
@@ -130,6 +175,78 @@ class MainActivity : AppCompatActivity() {
         letterList.add(Letter(getString(R.string.y)))
         letterList.add(Letter(getString(R.string.z)))
     }
+
+    private fun startNewGame() {
+        wordArray = resources.getStringArray(R.array.wordList)
+        hintArray = resources.getStringArray(R.array.hintList)
+        randomNumber = Random.nextInt(wordArray.size)
+        chosenWord = wordArray[randomNumber]
+        wordHint = hintArray[randomNumber]
+        gameState = "_".repeat(chosenWord.length)
+        guessedLetters = ArrayList()
+
+        hintCounter = 0
+        incorrectCounter = 0
+        randomNumber = 0
+        lettersNotGuessedYet = 26
+
+        findViewById<TextView>(R.id.gameTextView).text = gameState
+
+        hangmanDrawing.setImageResource(0)
+
+        letterButtons.forEach { button : Button ->
+            button.isEnabled = true
+            button.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showVowels() {
+        val vowels = listOf('A','E','I','O','U')
+        for (letter in vowels) {
+            if (chosenWord.contains(letter)) {
+                updateSecretWord(letter.toString())
+                when (letter) {
+                    'A' -> {
+                        val button: Button = findViewById(R.id.a)
+                        button.isEnabled = false
+                        button.visibility = View.INVISIBLE
+                        guessedLetters.add(R.id.a)
+                        lettersNotGuessedYet--
+                    }
+                    'E' -> {
+                        val button: Button = findViewById(R.id.e)
+                        button.isEnabled = false
+                        button.visibility = View.INVISIBLE
+                        guessedLetters.add(R.id.e)
+                        lettersNotGuessedYet--
+                    }
+                    'I' -> {
+                        val button: Button = findViewById(R.id.i)
+                        button.isEnabled = false
+                        button.visibility = View.INVISIBLE
+                        guessedLetters.add(R.id.i)
+                        lettersNotGuessedYet--
+                    }
+                    'O' -> {
+                        val button: Button = findViewById(R.id.o)
+                        button.isEnabled = false
+                        button.visibility = View.INVISIBLE
+                        guessedLetters.add(R.id.o)
+                        lettersNotGuessedYet--
+                    }
+                    'U' -> {
+                        val button: Button = findViewById(R.id.u)
+                        button.isEnabled = false
+                        button.visibility = View.INVISIBLE
+                        guessedLetters.add(R.id.u)
+                        lettersNotGuessedYet--
+                    }
+                }
+            }
+        }
+    }
+
+
     private fun updateSecretWord(guessedLetter: String) {
         gameState = chosenWord.mapIndexed { index, char ->
             when {
@@ -159,10 +276,10 @@ class MainActivity : AppCompatActivity() {
             9 -> hangmanDrawing.setImageResource()
             10 -> hangmanDrawing.setImageResource()
             11 -> {
-                hhangmanDrawing.setImageResource()
+                hangmanDrawing.setImageResource()
                 //You lost
             }**/
-        }
+            }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
