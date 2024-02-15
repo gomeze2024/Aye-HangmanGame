@@ -16,8 +16,7 @@ import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
     private var hintCounter : Int = 0
     private var incorrectCounter : Int = 0
-    private var randomNumber : Int = 0
-    private var lettersNotGuessedYet : Int = 26
+    private var chosenIndex : Int = 0
     private lateinit var gameState: String
     private lateinit var chosenWord : String
     private lateinit var wordHint : String
@@ -45,29 +44,30 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initLetterButtons()
 
+        wordArray = resources.getStringArray(R.array.wordList)
+        hintArray = resources.getStringArray(R.array.hintList)
+
         if (savedInstanceState != null) {
             hintCounter = savedInstanceState.getInt(HINT_COUNTER, 0)
-            incorrectCounter = savedInstanceState.getInt(INCORRECT_COUNTER, 0);
-            chosenWord = savedInstanceState.getString(CHOSEN_WORD,"")
+            incorrectCounter = savedInstanceState.getInt(INCORRECT_COUNTER, 0)
+            chosenIndex = savedInstanceState.getInt(CHOSEN_INDEX,0)
+            chosenWord = wordArray[chosenIndex]
             gameState = savedInstanceState.getString(GAME_STATE, "")
             guessedLetters = savedInstanceState.getIntegerArrayList(GUESSED_LETTERS) ?: ArrayList()
             lettersAdapter.setGuessedLetters(guessedLetters)
         } else {
-            wordArray = resources.getStringArray(R.array.wordList)
-            hintArray = resources.getStringArray(R.array.hintList)
-            randomNumber = Random.nextInt(wordArray.size)
-            chosenWord = wordArray[randomNumber]
-            wordHint = hintArray[randomNumber]
+            chosenIndex = Random.nextInt(wordArray.size - 1)
+            chosenWord = wordArray[chosenIndex]
+            wordHint = hintArray[chosenIndex]
             gameState = "_".repeat(chosenWord.length)
             guessedLetters = ArrayList()
         }
 
         initLetterButtons()
+        hintUpdate()
         lettersAdapter.setDisableFalse()
 
-        //hintButton = findViewById<Button>(R.id.hint)
-        //hintView = findViewById<TextView>(R.id.hintView)
-        newGameButton = findViewById<Button>(R.id.newGame)
+        newGameButton = findViewById(R.id.newGame)
         findViewById<TextView>(R.id.gameTextView).text = gameState
 
         head = findViewById(R.id.head)
@@ -84,16 +84,8 @@ class MainActivity : AppCompatActivity() {
         //General onClickListener for the letters.
         val clickListener = View.OnClickListener { view ->
             when (view.id) {
-                R.id.newGame -> {
-                    //start a new game
-                    startNewGame()
-                }
-                //R.id.hint -> {
-                   // showHint()
-                //}
-                //Button pressed was a letter
-                else -> {
-                }
+                R.id.newGame -> startNewGame()
+                R.id.hint -> showHint()
             }
         }
 
@@ -111,12 +103,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkLetterValidity(letter: String) {
         if (chosenWord.contains(letter)) {
-            Toast.makeText(this, "On the board!", Toast.LENGTH_SHORT).show()
             updateSecretWord(letter)
             checkIfWon()
 
         } else {
-            Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show()
             incorrectCounter++
             checkIfLost()
         }
@@ -129,6 +119,8 @@ class MainActivity : AppCompatActivity() {
         val orientation = resources.configuration.orientation
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             letterButtons.layoutManager = GridLayoutManager(this, 5, RecyclerView.VERTICAL, false)
+            hintButton = findViewById(R.id.hint)
+            hintView = findViewById(R.id.hintView)
         } else {
             letterButtons.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
         }
@@ -187,16 +179,14 @@ class MainActivity : AppCompatActivity() {
     private fun startNewGame() {
         wordArray = resources.getStringArray(R.array.wordList)
         hintArray = resources.getStringArray(R.array.hintList)
-        randomNumber = Random.nextInt(wordArray.size)
-        chosenWord = wordArray[randomNumber]
-        wordHint = hintArray[randomNumber]
+        chosenIndex = Random.nextInt(wordArray.size - 1)
+        chosenWord = wordArray[chosenIndex]
+        wordHint = hintArray[chosenIndex]
         gameState = "_".repeat(chosenWord.length)
         guessedLetters = ArrayList()
 
         hintCounter = 0
         incorrectCounter = 0
-        randomNumber = 0
-        lettersNotGuessedYet = 26
 
         findViewById<TextView>(R.id.gameTextView).text = gameState
 
@@ -212,97 +202,50 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showHint(){
-
         if (incorrectCounter == 5) {
             //If clicking would cause user to lose
             Toast.makeText(this, "Hint not available.", Toast.LENGTH_SHORT).show()
         } else {
             //give a hint
-            when (hintCounter) {
-                0 -> {
-                    //hintView.text = wordHint
-                    hintCounter++
-                }
-                1 -> {disableHalfLetters()}
-                2 -> {
-                    //Shows all vowels
-                    //showVowels()
-                    //Uses a turn
-                    incorrectCounter++
-                }
-                else -> {
-                    //No more hints to give
-                    Toast.makeText(this, "No more hints!", Toast.LENGTH_SHORT).show()
-                }
-            }
             hintCounter++
+            incorrectCounter++
+            hintUpdate()
+        }
+    }
+
+    private fun hintUpdate() {
+        when (hintCounter) {
+            0 -> {}
+            1 -> {disableHalfLetters()}
+            2 -> {showVowels()}
+            //Shows all vowels
         }
     }
 
     private fun disableHalfLetters(){
         //Disables half remaining letters
         //calc num of remaining letters
-        val numLettersRemaining = lettersNotGuessedYet / 2
+        val numLettersRemaining = (letterList.size - GUESSED_LETTERS.length) / 2
         //Gets indices of not guessed letters
         val allUnguessedIndices = letterList.indices.filter { it !in guessedLetters }
         //Gets indices of all incorrect letters
         val allIncorrectIndices = allUnguessedIndices.filter { letterList[it].letterName.toCharArray()[0] !in chosenWord}.toMutableList()
         for (i in 1..numLettersRemaining) {
             val randomIndex = Random.nextInt(allIncorrectIndices.size)
-            val button: Button = letterButtons.layoutManager?.findViewByPosition(allIncorrectIndices[randomIndex]) as Button
-            button.isEnabled = false
-            button.visibility = View.INVISIBLE
-            allIncorrectIndices.removeAt(randomIndex)
+            guessedLetters.add(randomIndex)
         }
+        lettersAdapter.setGuessedLetters(guessedLetters)
+        initLetterButtons()
     }
-    /**
 
     private fun showVowels() {
-        val vowels = listOf('A','E','I','O','U')
-        for (letter in vowels) {
-            if (chosenWord.contains(letter)) {
-                updateSecretWord(letter.toString())
-                when (letter) {
-                    'A' -> {
-                        val button: Button = findViewById(R.id.a)
-                        button.isEnabled = false
-                        button.visibility = View.INVISIBLE
-                        guessedLetters.add(R.id.a)
-                        lettersNotGuessedYet--
-                    }
-                    'E' -> {
-                        val button: Button = findViewById(R.id.e)
-                        button.isEnabled = false
-                        button.visibility = View.INVISIBLE
-                        guessedLetters.add(R.id.e)
-                        lettersNotGuessedYet--
-                    }
-                    'I' -> {
-                        val button: Button = findViewById(R.id.i)
-                        button.isEnabled = false
-                        button.visibility = View.INVISIBLE
-                        guessedLetters.add(R.id.i)
-                        lettersNotGuessedYet--
-                    }
-                    'O' -> {
-                        val button: Button = findViewById(R.id.o)
-                        button.isEnabled = false
-                        button.visibility = View.INVISIBLE
-                        guessedLetters.add(R.id.o)
-                        lettersNotGuessedYet--
-                    }
-                    'U' -> {
-                        val button: Button = findViewById(R.id.u)
-                        button.isEnabled = false
-                        button.visibility = View.INVISIBLE
-                        guessedLetters.add(R.id.u)
-                        lettersNotGuessedYet--
-                    }
-                }
-            }
+        val vowels = listOf(0, 4,9,14,20)
+        for (index in vowels) {
+            guessedLetters.add(index)
+            updateSecretWord(letterList[index].letterName)
         }
+        initLetterButtons()
     }
-    **/
 
     private fun updateSecretWord(guessedLetter: String) {
         gameState = chosenWord.mapIndexed { index, char ->
@@ -318,7 +261,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkIfWon() {
         if (gameState == chosenWord){
-            Toast.makeText(this, "You won!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "You won! Up for a New Games?", Toast.LENGTH_SHORT).show()
             lettersAdapter.setDisableTrue()
         }
     }
@@ -326,16 +269,30 @@ class MainActivity : AppCompatActivity() {
     private fun checkIfLost() {
         when (incorrectCounter) {
             1 -> head.visibility = View.VISIBLE
-            2 -> body.visibility = View.VISIBLE
-            3 -> leftArm.visibility = View.VISIBLE
-            4 -> rightArm.visibility = View.VISIBLE
-            5 -> leftLeg.visibility = View.VISIBLE
+            2 -> {head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE}
+            3 -> {head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE}
+
+            4 -> {head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+                rightArm.visibility = View.VISIBLE}
+            5 -> {head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+                rightArm.visibility = View.VISIBLE
+                leftLeg.visibility = View.VISIBLE}
             6 -> {
+                head.visibility = View.VISIBLE
+                body.visibility = View.VISIBLE
+                leftArm.visibility = View.VISIBLE
+                rightArm.visibility = View.VISIBLE
+                leftLeg.visibility = View.VISIBLE
                 rightLeg.visibility = View.VISIBLE
                 disableLetterButtons()
                 Toast.makeText(this, "You Lost? Up for a New Game?", Toast.LENGTH_SHORT).show()
-            }
-            else -> {
             }
         }
     }
@@ -343,7 +300,7 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(GAME_STATE, gameState)
-        outState.putString(CHOSEN_WORD, chosenWord)
+        outState.putInt(CHOSEN_INDEX, chosenIndex)
         outState.putInt(HINT_COUNTER, hintCounter)
         outState.putInt(INCORRECT_COUNTER, incorrectCounter)
         outState.putIntegerArrayList(GUESSED_LETTERS, ArrayList(guessedLetters))
@@ -351,7 +308,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val GAME_STATE = "game_state"
-        private const val CHOSEN_WORD = "chosen_word"
+        private const val CHOSEN_INDEX = "chosen_index"
         private const val HINT_COUNTER = "hint_counter"
         private const val INCORRECT_COUNTER = "incorrect_counter"
         private const val GUESSED_LETTERS = "remaining_letters"

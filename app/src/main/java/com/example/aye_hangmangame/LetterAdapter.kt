@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 
+// Code for recycler view based on following this tutorial
+// https://www.youtube.com/watch?v=jM4mZY9zuiU&t=345s
+
 data class Letter(val letterName : String)
 
 class LetterAdapter (private val letterList : List<Letter>) :
