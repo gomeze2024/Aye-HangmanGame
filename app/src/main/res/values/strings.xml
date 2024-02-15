@@ -28,9 +28,24 @@
     <string name="y">y</string>
     <string name="z">z</string>
 
+    <string name="empty">_________</string>
+
     <string name="hint">Hint</string>
 
     <string name="choose_a_letter">CHOOSE A LETTER</string>
+
+    <string-array name="hintList">
+        <item>ANIMAL</item>
+        <item>DRIVE</item>
+        <item>AESTHETIC</item>
+        <item>SPEED</item>
+        <item>BREEZE</item>
+        <item>CONTRAST</item>
+        <item>OCCULT</item>
+        <item>SPACE</item>
+        <item>WHIRLPOOL</item>
+        <item>ILLNESS</item>
+    </string-array>
 
     <string-array name="wordList">
         <item>ELEPHANT</item>
