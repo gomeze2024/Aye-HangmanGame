@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,6 +31,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var letterList : ArrayList<Letter>
     private lateinit var lettersAdapter : LetterAdapter
 
+    private lateinit var head : ImageView
+    private lateinit var body : ImageView
+    private lateinit var leftArm : ImageView
+    private lateinit var rightArm : ImageView
+    private lateinit var leftLeg : ImageView
+    private lateinit var rightLeg : ImageView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -52,12 +60,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         initLetterButtons()
+        lettersAdapter.setDisableFalse()
 
         //hintButton = findViewById<Button>(R.id.hint)
-        hintButton = findViewById<Button>(R.id.hint)
-        hintView = findViewById<TextView>(R.id.hintWord)
+        //hintView = findViewById<TextView>(R.id.hintView)
         newGameButton = findViewById<Button>(R.id.newGame)
         findViewById<TextView>(R.id.gameTextView).text = gameState
+
+        head = findViewById(R.id.head)
+        body = findViewById(R.id.body)
+        leftArm = findViewById(R.id.leftArm)
+        rightArm = findViewById(R.id.rightArm)
+        leftLeg = findViewById(R.id.leftLeg)
+        rightLeg = findViewById(R.id.rightLeg)
+
+        setHangManInvisible()
+        checkIfWon()
+        checkIfLost()
 
         //General onClickListener for the letters.
         val clickListener = View.OnClickListener { view ->
@@ -67,48 +86,7 @@ class MainActivity : AppCompatActivity() {
                     startNewGame()
                 }
                 R.id.hint -> {
-                    if (incorrectCounter == 11) {
-                        //If clicking would cause user to lose
-                        Toast.makeText(this, "Hint not available.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        //give a hint
-                        when (hintCounter) {
-                            0 -> {
-                                hintView.text = wordHint
-                                hintCounter++
-                            }
-                            1 -> {
-                                //Disables half remaining letters
-                                    //calc num of remaining letters
-                                val numLettersRemaining = lettersNotGuessedYet / 2
-                                //Gets indices of unguessed letters
-                                val allUnguessedIndices = letterList.indices.filter { it !in guessedLetters }
-                                //Gets indices of all incorrect letters
-                                val allIncorrectIndices = allUnguessedIndices.filter { letterList[it].letterName.toCharArray()[0] !in chosenWord}.toMutableList()
-                                    for (i in 1..numLettersRemaining) {
-                                        val randomIndex = Random.nextInt(allIncorrectIndices.size)
-                                        val button: Button = letterButtons.layoutManager?.findViewByPosition(allIncorrectIndices[randomIndex]) as Button
-                                        button.isEnabled = false
-                                        button.visibility = View.INVISIBLE
-                                        allIncorrectIndices.removeAt(randomIndex)
-                                    }
-                                //Uses a turn
-                                incorrectCounter++
-                                hintCounter++
-                            }
-                            2 -> {
-                                //Shows all vowels
-                                showVowels()
-                                //Uses a turn
-                                incorrectCounter++
-                                hintCounter++
-                            }
-                            else -> {
-                                //No more hints to give
-                                Toast.makeText(this, "No more hints!", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
+                    showHint()
                 }
                 //Button pressed was a letter
                 else -> {
@@ -117,6 +95,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         newGameButton.setOnClickListener(clickListener)
+    }
+
+    private fun setHangManInvisible () {
+        head.visibility = View.INVISIBLE
+        body.visibility = View.INVISIBLE
+        leftArm.visibility = View.INVISIBLE
+        rightArm.visibility = View.INVISIBLE
+        leftLeg.visibility = View.INVISIBLE
+        rightLeg.visibility = View.INVISIBLE
     }
 
     private fun checkLetterValidity(letter: String) {
@@ -152,6 +139,11 @@ class MainActivity : AppCompatActivity() {
 
             checkLetterValidity(it.letterName)
         }
+    }
+
+    private fun disableLetterButtons(){
+        lettersAdapter.setDisableTrue()
+        initLetterButtons()
     }
 
     private fun addLettersToList() {
@@ -199,11 +191,60 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.gameTextView).text = gameState
 
-        hangmanDrawing.setImageResource(0)
+        initLetterButtons()
+        lettersAdapter.setDisableFalse()
 
-        letterButtons.forEach { button : Button ->
-            button.isEnabled = true
-            button.visibility = View.VISIBLE
+        head.visibility = View.INVISIBLE
+        body.visibility = View.INVISIBLE
+        leftArm.visibility = View.INVISIBLE
+        rightArm.visibility = View.INVISIBLE
+        leftLeg.visibility = View.INVISIBLE
+        rightLeg.visibility = View.INVISIBLE
+        //hangmanDrawing.setImageResource(0)
+    }
+
+    private fun showHint(){
+
+        if (incorrectCounter == 5) {
+            //If clicking would cause user to lose
+            Toast.makeText(this, "Hint not available.", Toast.LENGTH_SHORT).show()
+        } else {
+            //give a hint
+            when (hintCounter) {
+                0 -> {
+                    hintView.text = wordHint
+                    hintCounter++
+                }
+                1 -> {disableHalfLetters()}
+                2 -> {
+                    //Shows all vowels
+                    showVowels()
+                    //Uses a turn
+                    incorrectCounter++
+                }
+                else -> {
+                    //No more hints to give
+                    Toast.makeText(this, "No more hints!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            hintCounter++
+        }
+    }
+
+    private fun disableHalfLetters(){
+        //Disables half remaining letters
+        //calc num of remaining letters
+        val numLettersRemaining = lettersNotGuessedYet / 2
+        //Gets indices of not guessed letters
+        val allUnguessedIndices = letterList.indices.filter { it !in guessedLetters }
+        //Gets indices of all incorrect letters
+        val allIncorrectIndices = allUnguessedIndices.filter { letterList[it].letterName.toCharArray()[0] !in chosenWord}.toMutableList()
+        for (i in 1..numLettersRemaining) {
+            val randomIndex = Random.nextInt(allIncorrectIndices.size)
+            val button: Button = letterButtons.layoutManager?.findViewByPosition(allIncorrectIndices[randomIndex]) as Button
+            button.isEnabled = false
+            button.visibility = View.INVISIBLE
+            allIncorrectIndices.removeAt(randomIndex)
         }
     }
 
@@ -253,7 +294,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun updateSecretWord(guessedLetter: String) {
         gameState = chosenWord.mapIndexed { index, char ->
             when {
@@ -266,27 +306,28 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.gameTextView).text = gameState
     }
 
-    private fun checkIfWon() : Boolean{
-        return gameState == chosenWord
+    private fun checkIfWon() {
+        if (gameState == chosenWord){
+            Toast.makeText(this, "You won!", Toast.LENGTH_SHORT).show()
+            lettersAdapter.setDisableTrue()
+        }
     }
 
     private fun checkIfLost() {
         when (incorrectCounter) {
-            /**1 -> hangmanDrawing.setImageResource()
-            2 -> hangmanDrawing.setImageResource()
-            3 -> hangmanDrawing.setImageResource()
-            4 -> hangmanDrawing.setImageResource()
-            5 -> hangmanDrawing.setImageResource()
-            6 -> hangmanDrawing.setImageResource()
-            7 -> hangmanDrawing.setImageResource()
-            8 -> hangmanDrawing.setImageResource()
-            9 -> hangmanDrawing.setImageResource()
-            10 -> hangmanDrawing.setImageResource()
-            11 -> {
-                hangmanDrawing.setImageResource()
-                //You lost
-            }**/
+            1 -> head.visibility = View.VISIBLE
+            2 -> body.visibility = View.VISIBLE
+            3 -> leftArm.visibility = View.VISIBLE
+            4 -> rightArm.visibility = View.VISIBLE
+            5 -> leftLeg.visibility = View.VISIBLE
+            6 -> {
+                rightLeg.visibility = View.VISIBLE
+                disableLetterButtons()
+                Toast.makeText(this, "You Lost? Up for a New Game?", Toast.LENGTH_SHORT).show()
             }
+            else -> {
+            }
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

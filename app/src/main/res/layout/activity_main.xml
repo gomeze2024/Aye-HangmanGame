@@ -190,11 +190,10 @@
         app:layout_constraintVertical_bias="0.931" />
 
     <TextView
-        android:id="@+id/hintWord"
+        android:id="@+id/hintView"
         android:layout_width="149dp"
         android:layout_height="49dp"
         android:layout_marginTop="48dp"
-        android:text="@string/hintWord"
         android:textAlignment="center"
         android:textColor="#AA000000"
         android:textSize="12pt"

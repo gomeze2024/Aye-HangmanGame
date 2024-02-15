@@ -28,8 +28,6 @@
     <string name="y">Y</string>
     <string name="z">Z</string>
 
-    <string name="empty">__ __ __ __ __ __ __ __ __</string>
-
     <string name="empty">_________</string>
 
     <string name="hint">Hint</string>

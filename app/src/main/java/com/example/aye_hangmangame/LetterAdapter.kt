@@ -1,6 +1,5 @@
 package com.example.aye_hangmangame
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +13,7 @@ class LetterAdapter (private val letterList : List<Letter>) :
 
     var onLetterClick : ((Letter) -> Unit)? = null
     private var guessedLetters = ArrayList<Int>()
+    private var disable : Boolean = true;
 
     class LetterViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
         val letterName : Button = itemView.findViewById(R.id.letter)
@@ -32,6 +32,14 @@ class LetterAdapter (private val letterList : List<Letter>) :
         return letterList.size
     }
 
+    fun setDisableTrue() {
+        disable = true;
+    }
+
+    fun setDisableFalse() {
+        disable = false;
+    }
+
     override fun onBindViewHolder(holder: LetterViewHolder, position: Int) {
         val letter = letterList[position]
         holder.letterName.text = letter.letterName
@@ -39,6 +47,8 @@ class LetterAdapter (private val letterList : List<Letter>) :
         if (guessedLetters.contains(position)) {
             holder.letterName.isEnabled = false
             holder.letterName.visibility = View.INVISIBLE
+        } else if (disable) {
+            holder.letterName.isEnabled = false
         } else {
             holder.letterName.isEnabled = true
             holder.letterName.visibility = View.VISIBLE
